@@ -76,6 +76,7 @@ function App() {
       const bingo = lane.every((tile) => clickedTiles[tile - 1]);
       if (bingo) {
         alert("Bingo, you win!");
+        setClickedTiles(initialClickedTiles);
       }
     });
   };
