@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./index.css";
 import "./App.css";
 
@@ -65,11 +65,27 @@ function App() {
     setClickedTiles((prevClickedTiles) => {
       const newClickedTiles = [...prevClickedTiles];
       newClickedTiles[index] = !newClickedTiles[index];
+      console.log(newClickedTiles);
       return newClickedTiles;
     });
   };
 
   // Checks if the user has a bingo
+  const checkBingo = () => {
+    bingoLanes.forEach((lane) => {
+      const bingo = lane.every((tile) => clickedTiles[tile - 1]);
+      if (bingo) {
+        alert("Bingo, you win!");
+      }
+    });
+  };
+
+  useEffect(
+    (newClickedTiles) => {
+      checkBingo(newClickedTiles);
+    },
+    [clickedTiles]
+  );
 
   return (
     <div className="flex p-16 bg-indigo-950 justify-center rounded-xl">
@@ -91,7 +107,9 @@ function App() {
             <div
               key={index}
               className={`flex items-center justify-center ${centerColor} ${clickedColor} p-4 w-36 h-36 hover:bg-red-300 transition-colors duration-300 ease-in-out`}
-              onClick={() => handleClickedTile(index)}
+              onClick={() => {
+                handleClickedTile(index);
+              }}
             >
               <p className="text-center">{centerTile}</p>
             </div>
