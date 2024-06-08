@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import io from "socket.io-client";
 import "./index.css";
 import "./App.css";
+import MovableCircles from "./components/MovableCircles";
 
 const socket = io("http://localhost:3001");
 
@@ -128,6 +129,7 @@ function App() {
             <h1 className="text-7xl text-left">Bingo</h1>
             <p className="text-4xl text-left">a game for remote teams</p>
           </div>
+          <MovableCircles />
         </div>
         {/* Bingo table and player list section */}
         <div className="flex flex-col justify-center pr-12">
