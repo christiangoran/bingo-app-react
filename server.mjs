@@ -6,7 +6,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5174", // Update with your client origin
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"],
   },
 });
@@ -16,7 +16,6 @@ const players = {};
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
 
-  // Initialize a new player
   players[socket.id] = {
     id: socket.id,
     name: `Player ${Object.keys(players).length + 1}`,

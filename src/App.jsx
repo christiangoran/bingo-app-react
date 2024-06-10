@@ -3,6 +3,9 @@ import io from "socket.io-client";
 import "./index.css";
 import "./App.css";
 import MovableCircles from "./components/MovableCircles";
+import BingoBoard from "./components/BingoBoard";
+import PlayerList from "./components/PlayerList";
+import Header from "./components/Header";
 
 const socket = io("http://localhost:3001");
 
@@ -59,147 +62,96 @@ const bingoLanes = [
 ];
 
 function App() {
-  const initialClickedTiles = Array(25).fill(false);
-  // Center tile is always clicked
-  initialClickedTiles[12] = true;
-  const [clickedTiles, setClickedTiles] = useState(initialClickedTiles);
+  const [players, setPlayers] = useState({});
+  const [winner, setWinner] = useState(null);
+  const [completedLanes, setCompletedLanes] = useState([]);
+  const [circlePositions, setCirclePositions] = useState(
+    Array.from({ length: 25 }, () => ({
+      x: Math.random() * 400,
+      y: Math.random() * 400,
+    }))
+  );
   const [shuffledPhrases, setShuffledPhrases] = useState(
     generateShuffledPhrases()
   );
-  const [players, setPlayers] = useState({});
-  const [winner, setWinner] = useState(null);
 
   useEffect(() => {
     socket.on("updatePlayers", (updatedPlayers) => {
       setPlayers(updatedPlayers);
     });
 
-    socket.on("tileClick", (data) => {
-      setClickedTiles((prevClickedTiles) => {
-        const newClickedTiles = [...prevClickedTiles];
-        newClickedTiles[data.index] = !newClickedTiles[data.index];
-        return newClickedTiles;
-      });
-    });
-
     socket.on("bingo", (data) => {
       setWinner(data.player);
       setTimeout(() => {
-        setShuffledPhrases(generateShuffledPhrases());
-        setClickedTiles([...initialClickedTiles]);
         setWinner(null);
-      }, 3000); // Reset after 3 seconds
+      }, 3000); // Show the winner message for 3 seconds
     });
 
     return () => {
       socket.off("updatePlayers");
-      socket.off("tileClick");
       socket.off("bingo");
     };
   }, []);
 
-  const handleClickedTile = (index) => {
-    if (index === 12) return;
-    setClickedTiles((prevClickedTiles) => {
-      const newClickedTiles = [...prevClickedTiles];
-      newClickedTiles[index] = !newClickedTiles[index];
-      socket.emit("tileClick", { index });
-      checkBingo(newClickedTiles);
-      return newClickedTiles;
-    });
+  const handleCircleMove = (index, x, y) => {
+    const newPositions = [...circlePositions];
+    newPositions[index] = { x, y };
+    setCirclePositions(newPositions);
+    checkBingo(newPositions);
   };
 
-  // Check if a bingo has been achieved
-  const checkBingo = (newClickedTiles) => {
-    bingoLanes.forEach((lane) => {
-      const bingo = lane.every((tile) => newClickedTiles[tile]);
-      if (bingo) {
+  const checkBingo = (positions) => {
+    const newCompletedLanes = [];
+
+    bingoLanes.forEach((lane, laneIndex) => {
+      const isBingo = lane.every((tileIndex) => {
+        const circle = positions[tileIndex];
+        const bingoTile = document.querySelector(`[data-index='${tileIndex}']`);
+        const { left, top, right, bottom } = bingoTile.getBoundingClientRect();
+        return (
+          circle.x >= left &&
+          circle.x <= right &&
+          circle.y >= top &&
+          circle.y <= bottom
+        );
+      });
+
+      if (isBingo && !completedLanes.includes(laneIndex)) {
+        newCompletedLanes.push(laneIndex);
         socket.emit("bingo");
       }
     });
+
+    if (newCompletedLanes.length > 0) {
+      setCompletedLanes((prevCompletedLanes) => [
+        ...prevCompletedLanes,
+        ...newCompletedLanes,
+      ]);
+    }
   };
 
   return (
-    <div id="bingo-card" className="py-12 bg-white rounded-xl relative">
-      {/* Content Wrapper */}
-      <div className="w-100 flex justify-between">
-        {/* Header and graphical details section */}
+    <div id="bingo-card" className="p-12 bg-white rounded-xl relative">
+      <div className="w-full flex justify-between">
         <div className="flex flex-col">
-          <div className="w-2/3 pl-12">
-            <h1 className="text-7xl text-left">Bingo</h1>
-            <p className="text-4xl text-left">a game for remote teams</p>
-          </div>
-          <MovableCircles />
+          <Header />
+          <MovableCircles
+            onCircleMove={handleCircleMove}
+            circlePositions={circlePositions}
+          />
         </div>
-        {/* Bingo table and player list section */}
-        <div className="flex flex-col justify-center pr-12">
-          {/* Bingo Board wrapper */}
-          <div className="w-100">
-            <table className="border-collapse border-4 border-white">
-              <tbody>
-                {/* Each row of bingo tiles, 5 rows created */}
-                {Array.from({ length: 5 }, (_, rowIndex) => (
-                  <tr key={rowIndex} className="border-y-2 border-blue-500">
-                    {/* Each column of bingo tiles, 5 columns created */}
-                    {Array.from({ length: 5 }, (_, colIndex) => {
-                      const index = rowIndex * 5 + colIndex;
-                      {
-                        /* Functionality to check for the center tile */
-                      }
-                      const tileContent =
-                        index === 12
-                          ? "Conference Bingo, may the best one win!"
-                          : shuffledPhrases[index];
-                      const centerColor =
-                        index === 12
-                          ? "rounded-full"
-                          : "border-x-2 border-orange-500";
-                      const clickedColor = clickedTiles[index]
-                        ? "line-through text-gray-500"
-                        : centerColor;
 
-                      return (
-                        // Each bingo tile
-                        <td
-                          key={index}
-                          className={`border border-black p-4 w-24 h-24 hover:bg-gray-100 transition-colors duration-300 ease-in-out cursor-pointer ${
-                            index === 12 ? centerColor : clickedColor
-                          }`}
-                          onClick={() => handleClickedTile(index)}
-                        >
-                          <p className="leading-3 text-center text-xs">
-                            {tileContent}
-                          </p>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {/* End Bingo Board wrapper */}
-          {/* Player list */}
-          <div className="mt-8">
-            <h3 className="text-xl">Players:</h3>
-            <ul className="flex flex-row p-4 justify-center">
-              {Object.values(players).map((player) => (
-                <li key={player.id} className="text-gray-400 px-2">
-                  {player.name}: {player.score}
-                </li>
-              ))}
-            </ul>
-          </div>
-          {/* End player list */}
+        <div className="flex flex-col justify-center pr-12">
+          <BingoBoard shuffledPhrases={shuffledPhrases} />
+
+          <PlayerList players={players} />
         </div>
-        {/* End Bingo table and player list section */}
       </div>
-      {/* End Content Wrapper */}
-      {/* Bingo win  message */}
+
+      {/* Bingo win message */}
       <div className="mt-8 absolute">
-        {winner && <h2 className=" text-7xl">Bingo! {winner.name} wins!</h2>}
+        {winner && <h2 className=" text-7xl">{winner.name} got a bingo!</h2>}
       </div>
-      {/* End Bingo win message */}
     </div>
   );
 }
