@@ -1,6 +1,8 @@
 import express from "express";
 import { Server } from "socket.io";
 import http from "http";
+import cors from "cors";
+import path from "path";
 
 const app = express();
 const server = http.createServer(app);
@@ -11,12 +13,26 @@ const io = new Server(server, {
   },
 });
 
+// Enable CORS
+app.use(
+  cors({
+    origin: "https://christiangoran.github.io",
+    methods: ["GET", "POST"],
+  })
+);
+
+// Serve the static files from the React app
+app.use(express.static(path.join(__dirname, "dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
+});
+
 const players = {};
 
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
 
-  // Initialize a new player with a default name
   players[socket.id] = {
     id: socket.id,
     name: `Player ${Object.keys(players).length + 1}`,
@@ -49,7 +65,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Use the port provided by Heroku, or default to 3001 locally
 const port = process.env.PORT || 3001;
 server.listen(port, () => {
   console.log(`listening on *:${port}`);
