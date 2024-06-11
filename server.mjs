@@ -19,6 +19,14 @@ const io = new Server(server, {
 });
 
 // Enable CORS
+
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN, // Use the environment variable
+  methods: ["GET", "POST"],
+};
+
+app.use(cors(corsOptions));
+
 app.use(
   cors({
     origin: "https://christiangoran.github.io",

@@ -80,14 +80,6 @@ function App() {
       setPlayers(updatedPlayers);
     });
 
-    socket.on("tileClick", (data) => {
-      setClickedTiles((prevClickedTiles) => {
-        const newClickedTiles = [...prevClickedTiles];
-        newClickedTiles[data.index] = !newClickedTiles[data.index];
-        return newClickedTiles;
-      });
-    });
-
     socket.on("bingo", (data) => {
       setWinner(data.player);
       setTimeout(() => {
@@ -97,7 +89,6 @@ function App() {
 
     return () => {
       socket.off("updatePlayers");
-      socket.off("tileClick");
       socket.off("bingo");
     };
   }, []);
@@ -107,7 +98,6 @@ function App() {
     setClickedTiles((prevClickedTiles) => {
       const newClickedTiles = [...prevClickedTiles];
       newClickedTiles[index] = !newClickedTiles[index];
-      socket.emit("tileClick", { index });
       checkBingo(newClickedTiles);
       return newClickedTiles;
     });
