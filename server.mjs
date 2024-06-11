@@ -6,7 +6,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5174", // Update with your client origin
+    origin: "http://localhost:5173", // Update with your client origin
     methods: ["GET", "POST"],
   },
 });
@@ -16,7 +16,7 @@ const players = {};
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
 
-  // Initialize a new player
+  // Initialize a new player with a default name
   players[socket.id] = {
     id: socket.id,
     name: `Player ${Object.keys(players).length + 1}`,
@@ -29,6 +29,13 @@ io.on("connection", (socket) => {
     console.log("user disconnected", socket.id);
     delete players[socket.id];
     io.emit("updatePlayers", players);
+  });
+
+  socket.on("newPlayer", (data) => {
+    if (players[socket.id]) {
+      players[socket.id].name = data.name;
+      io.emit("updatePlayers", players);
+    }
   });
 
   socket.on("tileClick", (data) => {
