@@ -1,8 +1,9 @@
 {
+  "home": "https://christiangoran.github.io/bingo-app-react/",
   "name": "bingo-app",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://christiangoran.github.io/bingo-app-react/",
+
   "type": "module",
   "scripts": {
     "dev": "vite",
