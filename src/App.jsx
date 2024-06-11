@@ -8,7 +8,7 @@ import BingoBoard from "./components/BingoBoard";
 import PlayerList from "./components/PlayerList";
 import Winner from "./components/Winner";
 
-const socket = io("https://bingo-game-app.herokuapp.com");
+const socket = io("https://bingo-game-app-e5f95e82d4a4.herokuapp.com");
 
 const phrases = [
   "Can you hear me?",
