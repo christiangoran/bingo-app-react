@@ -13,7 +13,7 @@ const BingoBoard = ({ shuffledPhrases, clickedTiles, handleClickedTile }) => {
                     : shuffledPhrases[index];
                 const centerColor =
                   index === 12
-                    ? "rounded-full"
+                    ? "rounded-full text-blue-800 text-s"
                     : "border-x-2 border-orange-500";
                 const clickedColor = clickedTiles[index]
                   ? "line-through text-gray-500"
