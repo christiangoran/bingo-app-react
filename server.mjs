@@ -49,6 +49,8 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(3001, () => {
-  console.log("listening on *:3001");
+// Use the port provided by Heroku, or default to 3001 locally
+const port = process.env.PORT || 3001;
+server.listen(port, () => {
+  console.log(`listening on *:${port}`);
 });
