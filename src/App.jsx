@@ -150,7 +150,7 @@ function App() {
   return (
     <div
       id="bingo-card"
-      className="py-12 bg-white rounded-xl relative m-1 md:m-8"
+      className="py-12 bg-white rounded-xl relative mx-2 mt-8 md:m-8"
     >
       <div className="w-full flex flex-col md:flex-row justify-between">
         <div className="flex flex-col mb-8 md:mb-0">
