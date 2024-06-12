@@ -65,7 +65,7 @@ npm run dev
 
 ## Future Update
 
-I tried to implement draggable circles instead of clicking on each tile but failed miserably with getting the coordinates of tiles and circles to match. This also turned out to be a nightmare responsiveness wise, so this will have be a part of a future update. Right now the running version can be found in the click-row-branch instead of main branch.
+I tried to implement draggable circles to use for the bingo board, instead of clicking on each tile but failed miserably with getting the coordinates of tiles and circles to match and being checked for a Bingo. It also turned out to be a nightmare responsiveness wise with coordinates and placement of the circle elements, so this will have be a part of a future update. Right now the running version can be found in the click-row-branch instead of main branch.
 For now, the circle elements can be dragged around, but do not serve any other purpose than looking real nice as decoration to my Googleish(?) kind of design :D
 
 ## License
