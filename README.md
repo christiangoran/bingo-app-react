@@ -63,6 +63,12 @@ npm run dev
 - Tailwind CSS
 - Lottie
 
+## Backend
+
+Backend for multiplayer function uses Socket.io with a server on Heroku.
+[Heroku app]( https://bingo-game-app-843da14696b0.herokuapp.com/)
+
+
 ## Future Update
 
 I tried to implement draggable circles to use for the bingo board, instead of clicking on each tile but failed miserably with getting the coordinates of tiles and circles to match and being checked for a Bingo. It also turned out to be a nightmare responsiveness wise with coordinates and placement of the circle elements, so this will have be a part of a future update. Right now the running version can be found in the click-row-branch instead of main branch.
