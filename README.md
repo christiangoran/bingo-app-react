@@ -2,6 +2,8 @@
 
 This is a Bingo game app designed for remote teams. The game allows players to join, click on tiles, and move circles around a bingo board. Players can win by completing bingo lanes, and the app announces the winner with an animation.
 
+Note: To see the code for the current deployed version, please se click-row-branch branch instead of main.
+
 ## Features
 
 - **Responsive Design**: The app adjusts to different screen sizes, stacking content vertically on medium screens and below.
@@ -60,6 +62,11 @@ npm run dev
 - GSAP (GreenSock Animation Platform)
 - Tailwind CSS
 - Lottie
+
+## Future Update
+
+I tried to implement draggable circles instead of clicking on each tile but failed miserably with getting the coordinates of tiles and circles to match. This also turned out to be a nightmare responsiveness wise, so this will have be a part of a future update. Right now the running version can be found in the click-row-branch instead of main branch.
+For now, the circle elements can be dragged around, but do not serve any other purpose than looking real nice as decoration to my Googleish(?) kind of design :D
 
 ## License
 
