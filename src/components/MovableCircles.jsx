@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
 gsap.registerPlugin(Draggable);
@@ -8,9 +8,9 @@ const generateCirclePositions = () => {
   const positions = [];
   const xRange = [20, 250];
   const yRange = [110, 300];
-  const radius = 16; // Half the width/height of a circle
+  const radius = 16;
 
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < 5; i++) {
     let newPos;
     let overlap;
 
@@ -40,7 +40,7 @@ const generateCirclePositions = () => {
 
 const circlePositions = generateCirclePositions();
 
-const MovableCircles = () => {
+const MovableCircles = ({ identifier, onElementsCoordinates }) => {
   const circleRefs = useRef([]);
   const colors = [
     "#ef4444", // red-500
@@ -53,16 +53,47 @@ const MovableCircles = () => {
   ];
 
   useEffect(() => {
+    const logCoordinates = () => {
+      const coordinatesArray = circleRefs.current
+        .map((circleDiv, index) => {
+          if (circleDiv) {
+            const rect = circleDiv.getBoundingClientRect();
+            // Center coordinates of the circles
+            const centerX = rect.x + rect.width / 2;
+            const centerY = rect.y + rect.height / 2;
+            return {
+              index,
+              centerX,
+              centerY,
+            };
+          }
+          return null;
+        })
+        .filter(Boolean);
+      onElementsCoordinates(identifier, coordinatesArray);
+    };
+
     Draggable.create(circleRefs.current, {
       type: "x,y",
       bounds: window,
+      onDragEnd: logCoordinates,
     });
 
+    logCoordinates();
+    window.addEventListener("resize", logCoordinates);
+    return () => {
+      window.removeEventListener("resize", logCoordinates);
+    };
+  }, [onElementsCoordinates, identifier]);
+
+  useEffect(() => {
     circleRefs.current.forEach((circle, index) => {
-      gsap.set(circle, {
-        x: circlePositions[index].x,
-        y: circlePositions[index].y,
-      });
+      if (circle) {
+        gsap.set(circle, {
+          x: circlePositions[index].x,
+          y: circlePositions[index].y,
+        });
+      }
     });
   }, []);
 
@@ -71,8 +102,8 @@ const MovableCircles = () => {
       {circlePositions.map((pos, index) => (
         <div
           key={index}
-          ref={(el) => (circleRefs.current[index] = el)}
-          className="w-16 h-16 rounded-full absolute"
+          ref={(circleElement) => (circleRefs.current[index] = circleElement)}
+          className="absolute w-16 h-16 rounded-full"
           style={{
             left: pos.x,
             top: pos.y,

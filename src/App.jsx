@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import io from "socket.io-client";
 import "./index.css";
 import "./App.css";
@@ -74,6 +74,8 @@ function App() {
   const [name, setName] = useState("");
   const [hasEnteredName, setHasEnteredName] = useState(false);
   const [completedBingoLanes, setCompletedBingoLanes] = useState([]);
+  const [circleCoordinates, setCircleCoordinates] = useState([]);
+  const [tdCoordinates, setTdCoordinates] = useState([]);
 
   useEffect(() => {
     socket.on("updatePlayers", (updatedPlayers) => {
@@ -101,6 +103,40 @@ function App() {
       socket.off("bingo");
     };
   }, []);
+
+  const checkMatch = useCallback((circleCoordinates, tdCoordinates) => {
+    if (circleCoordinates.length === 0 || tdCoordinates.length === 0) {
+      return;
+    }
+
+    const matches = circleCoordinates
+      .map((circle) => {
+        const matchingTd = tdCoordinates.find((td) => {
+          return (
+            circle.centerX >= td.left &&
+            circle.centerX <= td.right &&
+            circle.centerY >= td.top &&
+            circle.centerY <= td.bottom
+          );
+        });
+        return { circle, matchingTd };
+      })
+      .filter((match) => match.matchingTd);
+
+    if (matches.length > 0) {
+      matches.forEach((match) => {
+        console.log(
+          `Match found in td-element with coordinates: ${JSON.stringify(
+            match.matchingTd
+          )}`
+        );
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    checkMatch(circleCoordinates, tdCoordinates);
+  }, [circleCoordinates, tdCoordinates, checkMatch]);
 
   const handleClickedTile = (index) => {
     if (index === 12) return;
@@ -134,21 +170,44 @@ function App() {
     }
   };
 
+  const handleElementsCoordinates = (identifier, coordinatesArray) => {
+    // console.log(`Coordinates from ${identifier}:`, coordinatesArray);
+    if (identifier === "MovableCircles") {
+      setCircleCoordinates((prevCoordinates) => {
+        if (
+          JSON.stringify(prevCoordinates) !== JSON.stringify(coordinatesArray)
+        ) {
+          return coordinatesArray;
+        }
+        return prevCoordinates;
+      });
+    } else if (identifier === "BingoBoard") {
+      setTdCoordinates((prevCoordinates) => {
+        if (
+          JSON.stringify(prevCoordinates) !== JSON.stringify(coordinatesArray)
+        ) {
+          return coordinatesArray;
+        }
+        return prevCoordinates;
+      });
+    }
+  };
+
   if (!hasEnteredName) {
     return (
       <div className="flex items-center justify-center h-screen">
         <form onSubmit={handleNameSubmit} className="text-center">
-          <h1 className="text-2xl mb-4">Enter your name to start playing</h1>
+          <h1 className="mb-4 text-2xl">Enter your name to start playing</h1>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="border border-gray-400 p-2 mb-4 rounded-xl"
+            className="p-2 mb-4 border border-gray-400 rounded-xl"
           />
           <br />
           <button
             type="submit"
-            className="bg-orange-500 text-white p-2 rounded-xl"
+            className="p-2 text-white bg-orange-500 rounded-xl"
           >
             Start Game
           </button>
@@ -158,17 +217,23 @@ function App() {
   }
 
   return (
-    <div id="bingo-card" className="py-12 bg-white rounded-xl relative">
-      <div className="w-full flex flex-col md:flex-row justify-between">
+    <div id="bingo-card" className="relative py-12 bg-white rounded-xl">
+      <div className="flex flex-col justify-between w-full md:flex-row">
         <div className="flex flex-col mb-8 md:mb-0">
           <Header />
-          <MovableCircles className="hidden md:block" />
+          <MovableCircles
+            onElementsCoordinates={handleElementsCoordinates}
+            identifier="MovableCircles"
+            className="hidden md:block"
+          />
         </div>
         <div className="flex flex-col justify-center md:pr-12">
           <BingoBoard
             shuffledPhrases={shuffledPhrases}
             clickedTiles={clickedTiles}
             handleClickedTile={handleClickedTile}
+            onElementsCoordinates={handleElementsCoordinates}
+            identifier="BingoBoard"
             className="text-xs md:text-base"
           />
           <PlayerList players={players} />
